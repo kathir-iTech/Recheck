@@ -73,7 +73,7 @@ async def run_check(mode, cancellation=None, qemu=None, image=None, output=None,
         except (InterruptedError, asyncio.CancelledError):
             report = {"schema_version": 1, "verdict": "canceled", "release_blocked": True}
         except Exception as error:
-            reason = str(error).replace(str(directory), "the run logs")
+            reason = (str(error) or type(error).__name__).replace(str(directory), "the run logs")
             if isinstance(error, ModuleNotFoundError) and error.name == "pymodbus":
                 reason = "Install the station dependency with python -m pip install -r requirements.txt."
             report = {"schema_version": 1, "verdict": "incomplete", "release_blocked": True,

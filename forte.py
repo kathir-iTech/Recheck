@@ -4,6 +4,7 @@ import asyncio
 from contextlib import asynccontextmanager
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import socket
@@ -22,15 +23,24 @@ class RestartingStation:
         self.pids = []
 
     async def start(self):
-        command = [sys.executable, str(ROOT / "station_service.py"), str(self.database)]
+        executable = sys.executable
+        environment = os.environ.copy()
+        if os.name == "nt" and sys.prefix != sys.base_prefix:
+            # Bypass the Windows venv launcher so the subprocess handle owns the interpreter.
+            executable = sys._base_executable
+            environment["PYTHONPATH"] = os.pathsep.join(path for path in sys.path if path)
+        command = [executable, str(ROOT / "station_service.py"), str(self.database)]
         if self.durable_ids:
             command.append("--durable-ids")
-        with self.log.open("ab") as log:
-            self.process = await asyncio.create_subprocess_exec(
-                *command, stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=log,
-                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-            )
-        ready = await asyncio.wait_for(self.process.stdout.readline(), timeout=10)
+        self.process = await asyncio.create_subprocess_exec(
+            *command, stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE, env=environment,
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        try:
+            ready = await asyncio.wait_for(self.process.stdout.readline(), timeout=20)
+        except TimeoutError as error:
+            raise RuntimeError("The station did not start listening within 20 seconds.") from error
         try:
             info = json.loads(ready)
             if not isinstance(info["pid"], int) or not 0 < info["port"] < 65536:
@@ -41,10 +51,17 @@ class RestartingStation:
         return info["port"]
 
     async def stop(self):
-        if self.process and self.process.returncode is None:
-            # Signal the station itself, including when Windows runs it through a venv launcher.
-            self.process.stdin.close()
-            await asyncio.wait_for(self.process.wait(), timeout=10)
+        if not self.process or self.process.stdin.is_closing():
+            return
+        collect = asyncio.create_task(self.process.communicate())
+        try:
+            _, stderr = await asyncio.wait_for(asyncio.shield(collect), timeout=20)
+        except TimeoutError:
+            if self.process.returncode is None:
+                self.process.kill()
+            _, stderr = await collect
+        with self.log.open("ab") as log:
+            log.write(stderr)
 
     def events(self):
         from station_store import read_events
