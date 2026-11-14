@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "target": "QNX 8.0 x86-64 in QEMU",
+  "image_sha256": "76ba00ed3b0e9e58617a4b856bcadea7f316ceeb11fe67e1c9d8f5471549ee10",
+  "command_transport": "serial bridge to Modbus/TCP",
+  "observer": "separate Modbus/TCP connection",
+  "station_events": [
+    {
+      "command_id": 41,
+      "advance": 1
+    },
+    {
+      "command_id": 42,
+      "advance": 2
+    },
+    {
+      "command_id": 44,
+      "advance": 3
+    },
+    {
+      "command_id": 44,
+      "advance": 4
+    },
+    {
+      "command_id": 45,
+      "advance": 5
+    },
+    {
+      "command_id": 46,
+      "advance": 6
+    },
+    {
+      "command_id": 51,
+      "advance": 7
+    },
+    {
+      "command_id": 52,
+      "advance": 8
+    }
+  ],
+  "station_observations": [
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    2,
+    3,
+    4,
+    4,
+    5,
+    5,
+    5,
+    6,
+    6,
+    6,
+    8,
+    8,
+    8,
+    8
+  ],
+  "verdict": "suite_verified",
+  "cases": [
+    {
+      "case": "normal",
+      "command_id": 41,
+      "caller_reply": "ACK",
+      "original_pid": 4,
+      "replacement_pid": 0,
+      "baseline": 0,
+      "before_retry": 1,
+      "final": 1,
+      "observed_advances": 1,
+      "verdict": "pass",
+      "release_blocked": false
+    },
+    {
+      "case": "before_action_retry",
+      "command_id": 42,
+      "caller_reply": "ESRCH",
+      "original_pid": 4100,
+      "replacement_pid": 8196,
+      "baseline": 1,
+      "before_retry": 1,
+      "final": 2,
+      "observed_advances": 1,
+      "verdict": "pass",
+      "release_blocked": false
+    },
+    {
+      "case": "before_action_suppressed",
+      "command_id": 43,
+      "caller_reply": "ESRCH",
+      "original_pid": 12292,
+      "replacement_pid": 0,
+      "baseline": 2,
+      "before_retry": 2,
+      "final": 2,
+      "observed_advances": 0,
+      "verdict": "regression",
+      "release_blocked": true
+    },
+    {
+      "case": "after_action_blind_retry",
+      "command_id": 44,
+      "caller_reply": "ESRCH",
+      "original_pid": 16388,
+      "replacement_pid": 20484,
+      "baseline": 2,
+      "before_retry": 3,
+      "final": 4,
+      "observed_advances": 2,
+      "verdict": "regression",
+      "release_blocked": true
+    },
+    {
+      "case": "after_action_protected_retry",
+      "command_id": 45,
+      "caller_reply": "ESRCH",
+      "original_pid": 24580,
+      "replacement_pid": 28676,
+      "baseline": 4,
+      "before_retry": 5,
+      "final": 5,
+      "observed_advances": 1,
+      "verdict": "pass",
+      "release_blocked": false
+    },
+    {
+      "case": "after_reply_control",
+      "command_id": 46,
+      "caller_reply": "ACK",
+      "original_pid": 32772,
+      "replacement_pid": 0,
+      "baseline": 5,
+      "before_retry": 6,
+      "final": 6,
+      "observed_advances": 1,
+      "verdict": "pass",
+      "release_blocked": false
+    }
+  ],
+  "history": {
+    "baseline": 6,
+    "before_retry": 8,
+    "after_retry": 8,
+    "after_conflict": 8,
+    "conflict_acknowledged": true
+  }
+}

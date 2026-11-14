@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151a17">
+  <title>Recheck · QNX Recovery Workbench</title>
+  <link rel="icon" href="data:,">
+  <style>
+:root{color-scheme:light;--paper:#f1f2eb;--surface:#fafbf5;--ink:#1b221d;--muted:#566257;--line:#d8dfd2;--dark:#161e19;--lime:#dbf388;--green:#355743;--red:#9a3d24;--mono:"IBM Plex Mono",monospace}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px "DM Sans",system-ui,sans-serif}button{font:inherit;cursor:pointer}button:disabled{opacity:.47;cursor:default}[hidden]{display:none!important}button:focus-visible,summary:focus-visible{outline:3px solid #578759;outline-offset:3px}
+.masthead{min-height:68px;padding:12px clamp(18px,4vw,60px);background:#151b17;color:#f2f5e9;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.identity,.header-actions,.run-actions{display:flex;align-items:center;gap:14px}.identity{font-size:21px;font-weight:700;white-space:nowrap}.identity small{border-left:1px solid #49534b;padding-left:14px;font-size:12px;font-weight:500;color:#b8c5b7}.mark{display:grid;place-items:center;width:34px;height:34px;border-radius:8px;background:var(--lime);color:var(--dark);font-size:26px}.connection{font:11px var(--mono);white-space:nowrap;color:#d1dccb}.connection::before{content:"";display:inline-block;margin-right:7px;background:#a7cd7e;width:7px;height:7px;border-radius:50%}.masthead .subtle{color:#eff5e7;border-color:#59675c}
+main{width:min(1380px,calc(100% - 2 * clamp(18px,4vw,60px)));margin:0 auto 40px}.intro{display:flex;justify-content:space-between;align-items:end;gap:24px;margin:37px 0 26px}.location{font:500 11px var(--mono);color:#41574a;margin:0 0 12px}.location span{margin:0 7px;color:#899688}
+h1{font-size:clamp(34px,5vw,64px);line-height:.99;letter-spacing:-.055em;margin:0}h2,p{margin:0}.lede{color:var(--muted);margin-top:13px;font-size:clamp(14px,1.5vw,17px)}.primary,.subtle{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:42px;padding:9px 13px;border:1px solid var(--line);border-radius:7px;background:transparent;color:inherit;font-weight:700}.primary{background:var(--lime);border-color:#9db957;color:#182215;white-space:nowrap;min-height:49px;padding:10px 17px}.primary:hover:not(:disabled){background:#e8fcac}.subtle:hover:not(:disabled){background:#778c7018}
+.workspace{display:grid;grid-template-columns:minmax(224px, .73fr) minmax(0, 2.3fr);gap:17px}.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 18px;border-bottom:1px solid var(--line)}.panel-head h2{font-size:15px}.mono{font:500 11px var(--mono);color:var(--muted)}.scenarios nav{display:grid;gap:4px;padding:8px}.case{display:flex;width:100%;align-items:center;gap:10px;text-align:left;color:var(--ink);border:1px solid transparent;border-radius:6px;background:transparent;padding:9px 8px}.case:hover{background:#e9eee1}.case[aria-current=true]{background:#e8efdc;border-color:#bdcdb3}.case-index{font:11px var(--mono);color:#53644d}.case-label{flex:1;font-weight:700;font-size:13px}.case-status{width:8px;height:8px;flex:0 0 8px;border:1px solid #768475;border-radius:50%}.case-status.pass{background:#629060}.case-status.regression{background:#ca6a4a}.outage{padding:8px;border-top:1px solid var(--line)}.outage button{width:100%;justify-content:space-between;font-size:12px;min-height:36px}
+.result-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:17px 20px}.result-head h2{margin-top:4px;font-size:clamp(19px,2.6vw,31px);line-height:1.1;letter-spacing:-.035em}.source{color:#536754}.verdict{padding:7px 9px;border-radius:5px;border:1px solid #bdc9ba;color:#365140;background:#edf0e5;font-size:12px;font-weight:700;text-align:center;flex-shrink:0}.verdict.regression{background:#ffebe2;color:#7d321f;border-color:#e6b7a8}.verdict.pass{background:#e0efdb;color:#2d552e;border-color:#afd0a5}.verdict.incomplete{background:#fcf0cd;color:#624815;border-color:#e1ca8e}
+.stage{position:relative;min-height:235px;display:grid;grid-template-columns:164px minmax(0,1fr);align-items:center;background:#1c2820;color:#e8f1e3;overflow:hidden}.stage-copy{padding:19px;z-index:1;display:grid;gap:8px}.stage-copy span{font:11px var(--mono);color:#bbc9b9}.stage-copy strong{font-size:58px;line-height:1;letter-spacing:-.07em;color:var(--lime)}.stage-copy small{font:500 18px var(--mono);color:#c0cdbd}canvas{width:100%;height:235px;display:block}.simulation{position:absolute;bottom:11px;right:13px;color:#bfcebd;font:10px var(--mono)}.result-foot{display:flex;align-items:center;gap:12px;justify-content:space-between;min-height:69px;padding:11px 18px}.result-foot p{font-size:14px;color:var(--muted)}.result-foot button{font-size:12px;white-space:nowrap}.notice{padding:9px 12px;border-radius:6px;background:#fff2d1;border:1px solid #e7cc8d;margin-bottom:12px;color:#5e461b}
+.timeline{margin-top:17px}.timeline-body{padding:12px 18px;display:grid;gap:7px}.lane{display:grid;grid-template-columns:145px repeat(3,minmax(0,1fr));gap:7px;align-items:stretch}.lane-label{padding:10px 0;font-weight:700;font-size:12px;color:#395546}.event{padding:9px 10px;min-height:55px;background:#eef2e8;border-left:2px solid #8caa84;border-radius:4px;font-size:13px}.event b{display:block;margin-bottom:2px}.event span{font-size:12px;color:var(--muted)}.event.emphasis{background:#f8e8dd;border-color:#ca6a4a}
+.lower{margin-top:17px;display:grid;grid-template-columns:1fr 1fr;gap:17px}summary{padding:14px 18px;font-weight:700;cursor:pointer}dl,#history{margin:0;padding:0 18px 15px}dt{font-weight:700;font-size:12px}dd{margin:1px 0 10px;color:var(--muted);overflow-wrap:anywhere}.history-row{display:flex;justify-content:space-between;gap:10px;width:100%;margin-bottom:5px}.history-row[aria-current=true]{background:#e8efdc}.history-row span{font:11px var(--mono);color:var(--muted)}footer{display:flex;justify-content:space-between;gap:10px;width:min(1380px,92%);margin:0 auto;padding:16px 0;border-top:1px solid var(--line);color:var(--muted);font:11px var(--mono)}
+@media(max-width:800px){.workspace{grid-template-columns:190px minmax(0,1fr)}.stage{grid-template-columns:130px minmax(0,1fr)}.result-foot{flex-wrap:wrap}.identity small{display:none}.lane{grid-template-columns:107px repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.intro{align-items:start;flex-direction:column;gap:14px;margin:23px 0 16px}.masthead{padding:10px 14px}.header-actions{gap:8px}.connection{font-size:10px}.header-actions .subtle{font-size:11px;padding:6px;min-height:34px}.workspace,.lower{grid-template-columns:1fr}.result{grid-row:1}.scenarios nav{grid-template-columns:1fr 1fr}.case{padding:8px 5px;gap:5px}.case-label{font-size:11px}.result-head,.result-foot{padding:12px}.stage{grid-template-columns:98px minmax(0,1fr);min-height:172px}.stage-copy{padding:11px}.stage-copy strong{font-size:38px}.stage-copy span{font-size:9px}canvas{height:172px}.timeline-body{padding:9px}.lane{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.lane-label{grid-column:1/-1;padding:4px 0}.event{padding:6px;font-size:11px}.event span{font-size:10px}}
+ .scrubber{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:8px 18px 14px;font-size:12px;color:var(--muted)}.scrubber input{accent-color:#45684c;max-width:135px}.scrubber output{font:11px var(--mono)}
+@media(max-width:370px){.masthead{padding-inline:11px}.identity{gap:8px;font-size:18px}.mark{width:29px;height:29px}.header-actions .connection{display:none}.result-head{align-items:start;flex-direction:column}.run-actions{flex-wrap:wrap}.history-row{flex-wrap:wrap}}
+.comparison {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(0, 1.3fr);
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 17px;
+  padding: 12px 15px;
+}
+.comparison-intro h2 {font-size: 16px;}
+.comparison-intro p {margin-top: 4px; color: var(--muted); font-size: 13px;}
+.comparison-results {display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;}
+.comparison-case {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 8px;
+  text-align: left;
+  color: var(--ink);
+  background: #eff4e9;
+  border: 1px solid #bdcdb3;
+  border-radius: 7px;
+  padding: 7px 10px;
+}
+.comparison-case.regression {background: #f9eee6; border-color: #dfb9a6;}
+.comparison-case:hover, .comparison-case[aria-pressed="true"] {border-color: #536e53; box-shadow: inset 0 0 0 1px #536e53;}
+.comparison-case.regression:hover, .comparison-case.regression[aria-pressed="true"] {border-color: #9a4f37; box-shadow: inset 0 0 0 1px #9a4f37;}
+.comparison-label {font-size: 13px; font-weight: 700;}
+.comparison-result {grid-column: 2; grid-row: 1 / 3; display: grid; justify-items: end; line-height: 1; color: var(--green);}
+.comparison-case.regression .comparison-result {color: var(--red);}
+.comparison-result strong {font-size: 25px;}
+.comparison-result span {font-size: 10px;}
+.comparison-verdict {font-size: 11px; color: var(--muted);}
+@media (max-width: 670px) {
+  .comparison {grid-template-columns: 1fr; gap: 9px; padding: 10px;}
+  .comparison-case {padding-inline: 7px;}
+}
+.release-policy {display: grid; gap: 10px; padding: 13px 16px; margin-top: 17px;}
+.workspace.forte-workspace {grid-template-columns: minmax(0, 1fr);}
+.notice, .event {overflow-wrap: anywhere;}
+.release-policy h2 {font-size: 15px;}
+.release-policy p {margin-top: 3px; font-size: 13px; color: var(--muted);}
+.policy-cases {display: flex; flex-wrap: wrap; gap: 6px;}
+.policy-case {display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 6px; padding: 5px 7px; font-size: 12px; cursor: pointer;}
+.policy-case:has(:checked) {background: #e8efdc; border-color: #bdcdb3;}
+.policy-case input {margin: 0; accent-color: #45684c;}
+.policy-actions {display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 12px;}
+.policy-actions .subtle {min-height: 30px; padding: 4px 8px;}
+#policy-result {font-weight: 700; color: var(--green);}</style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="identity"><span class="mark" aria-hidden="true">↻</span><span>Recheck</span><small>QNX Recovery Workbench</small></div>
+    <div class="header-actions"><span class="connection" id="connection">Connecting</span><button id="export" class="subtle" type="button" disabled>Download evidence <span aria-hidden="true">↓</span></button></div>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="title">
+      <div><p class="location">Release tests <span aria-hidden="true">/</span> Packaging cell</p><h1>Command recovery</h1>
+      <p class="lede">One command should move one carton. See whether a restart makes the station move it twice.</p></div>
+      <div class="run-actions"><button id="cancel" type="button" class="subtle" hidden>Cancel</button><button id="run-station" class="primary" type="button" disabled><span aria-hidden="true">▶</span> Test station restart</button></div>
+    </section>
+    <p class="notice" id="notice" role="status" hidden></p>
+    <section id="comparison" class="comparison panel" aria-labelledby="comparison-title" hidden>
+      <div class="comparison-intro">
+        <h2 id="comparison-title">Same lost reply, different outcomes</h2>
+        <p id="comparison-description">The controller exits after the carton moves. The station’s own readback decides the result.</p>
+      </div>
+      <div class="comparison-results" id="comparison-results"></div>
+    </section>
+    <div class="workspace">
+      <aside class="scenarios panel" aria-labelledby="scenarios-title">
+        <div class="panel-head"><h2 id="scenarios-title">Test cases</h2></div>
+        <nav id="cases" aria-label="Recovery cases"></nav>
+      </aside>
+      <section class="result panel" aria-labelledby="case-title">
+        <div class="result-head"><div><p id="source" class="mono source">Captured QNX run</p><h2 id="case-title">Crash after action</h2></div><span id="verdict" class="verdict">Awaiting evidence</span></div>
+        <div class="stage">
+          <div class="stage-copy"><span>Packaging station</span><strong id="observed">— <small>/ 1</small></strong><span>Observed advances</span></div>
+          <canvas id="station" width="720" height="250" aria-hidden="true"></canvas>
+          <span class="simulation">Simulated station</span>
+        </div>
+        <div class="result-foot"><p id="reason"></p><button id="compare" class="subtle" type="button" hidden>Compare with correction <span aria-hidden="true">→</span></button></div>
+      </section>
+    </div>
+    <section class="panel timeline" aria-labelledby="timeline-title">
+      <div class="panel-head"><h2 id="timeline-title">What happened</h2><span id="command" class="mono"></span></div>
+      <div class="timeline-body" id="timeline"></div>
+      <div id="scrubber" class="scrubber" hidden><label for="step">Inspect station readbacks</label><input id="step" type="range" min="0" max="2" value="2" step="1"><output id="step-label" for="step"></output></div>
+    </section>
+    <section class="panel release-policy" aria-labelledby="policy-title">
+      <div>
+        <h2 id="policy-title">Reference suite and CI policy</h2>
+        <p>Each selected case must advance exactly once. QNX runs the full reference suite and gates on your selection.</p>
+      </div>
+      <div id="policy-cases" class="policy-cases" role="group" aria-label="Cases that gate the release"></div>
+      <div class="policy-actions">
+        <button id="run" class="subtle" type="button" disabled>Run recovery test</button>
+        <button id="run-forte" class="subtle" type="button" disabled>Run FORTE comparison</button>
+        <button id="outage" class="subtle" type="button" disabled>Test observer outage</button>
+        <button id="policy-export" class="subtle" type="button" disabled>Export CI policy</button>
+        <span id="policy-result" role="status"></span>
+      </div>
+    </section>
+    <div class="lower">
+      <details class="panel"><summary>Technical evidence</summary><dl id="technical"></dl></details>
+      <details class="panel"><summary>Recent runs</summary><div id="history"></div></details>
+    </div>
+  </main>
+  <footer>Recheck <span>QNX 8.0 · QEMU · Modbus station</span></footer>
+<script id="embedded-evidence" type="application/json">{"target": "QNX 8.0 x86-64 in QEMU", "upstream": "Eclipse 4diac FORTE 3.3.0", "scenario": "Same protected controller image, host station process replaced after first write", "observer": "Separate Modbus/TCP station readback before and after replacement", "volatile": {"image_sha256": "99219a87f9ec6edd6e38d390be64f4bd29a384222e305003f8f34029ae0b17e7", "controller_pids": [4, 8196], "command_id": 41, "checkpoint": "station write acknowledged before adapter returns", "observed_advances": 2, "readbacks": [0, 1, 2], "release_blocked": true, "station_events": [{"command_id": 41, "advance": 1}, {"command_id": 41, "advance": 2}], "guest_log": "evidence-volatile.guest.log", "station_restart": {"process_ids": [5372, 7860], "checkpoint": "first write committed and acknowledged to bridge before QNX receives its reply", "readback_after_restart": 1, "durable_command_history": false}}, "durable": {"image_sha256": "99219a87f9ec6edd6e38d390be64f4bd29a384222e305003f8f34029ae0b17e7", "controller_pids": [4, 8196], "command_id": 41, "checkpoint": "station write acknowledged before adapter returns", "observed_advances": 1, "readbacks": [0, 1, 1], "release_blocked": false, "station_events": [{"command_id": 41, "advance": 1}], "guest_log": "evidence-durable.guest.log", "station_restart": {"process_ids": [8540, 2976], "checkpoint": "first write committed and acknowledged to bridge before QNX receives its reply", "readback_after_restart": 1, "durable_command_history": true}}, "schema_version": 1, "verdict": "comparison_verified", "release_blocked": false, "logs": {"evidence-durable.guest.log": "\nnon UEFI or UEFI+CSM boot\nACPI table not found (0x4746434d)\nSystem behaves poorly without PCID support.\noverriding mask for controller 2, vector_base 0\nERROR: T#1794666962023509000: CBSDSocketInterface: Couldn't create socket: Address family not supported by protocol family\nFORTE_EFFECT_ACK pid=4 command=41 counter=2 register=10\nFORTE_EXIT attempt=1 pid=4 status=86\nERROR: T#1794666972839773000: CBSDSocketInterface: Couldn't create socket: Address family not supported by protocol family\nFORTE_EFFECT_ACK pid=8196 command=41 counter=2 register=10\nFORTE_EXIT attempt=2 pid=8196 status=86\nFORTE_RECOVERY_DONE\n", "evidence-durable.qemu.log": "D:\\QNX\\qemu\\qemu-system-x86_64.exe: -serial tcp:127.0.0.1:55201,server=on,wait=on: info: QEMU waiting for connection on: disconnected:tcp:127.0.0.1:55201,server=on\n", "evidence-durable.station.log": "", "evidence-volatile.guest.log": "\nnon UEFI or UEFI+CSM boot\nACPI table not found (0x4746434d)\nSystem behaves poorly without PCID support.\noverriding mask for controller 2, vector_base 0\nERROR: T#1794666935547443000: CBSDSocketInterface: Couldn't create socket: Address family not supported by protocol family\nFORTE_EFFECT_ACK pid=4 command=41 counter=2 register=10\nFORTE_EXIT attempt=1 pid=4 status=86\nERROR: T#1794666945253320000: CBSDSocketInterface: Couldn't create socket: Address family not supported by protocol family\nFORTE_EFFECT_ACK pid=8196 command=41 counter=2 register=10\nFORTE_EXIT attempt=2 pid=8196 status=86\nFORTE_RECOVERY_DONE\n", "evidence-volatile.qemu.log": "D:\\QNX\\qemu\\qemu-system-x86_64.exe: -serial tcp:127.0.0.1:55117,server=on,wait=on: info: QEMU waiting for connection on: disconnected:tcp:127.0.0.1:55117,server=on\n", "evidence-volatile.station.log": ""}, "run_id": "33694f69a91240329e9aa40902d669ac", "mode": "station_restart", "started_at": "2026-11-14T14:34:52.537581+00:00", "finished_at": "2026-11-14T14:36:15.485534+00:00", "selected_cases": [], "gate": {"station_history": "durable", "required_advances": 1}}</script>
+<script>const cases = [
+  ["normal", "Normal operation", "The controller replied and the station advanced once."],
+  ["before_action_retry", "Crash before action · retry", "The first controller exited before acting. The replacement applied the command once."],
+  ["before_action_suppressed", "Crash before action · no retry", "The controller exited before acting. Suppressing the retry left the carton in place."],
+  ["after_action_blind_retry", "Crash after action · blind retry", "The station had already advanced. Retrying the same command moved it a second time."],
+  ["after_action_protected_retry", "Crash after action · protected", "The station recognized the original command ID. The retry added no second advance."],
+  ["after_reply_control", "Crash after reply", "The caller received an acknowledgement before the controller exited."]
+];
+const labels = {pass: "Release check passed", regression: "Release blocked", incomplete: "Test incomplete", canceled: "Run canceled"};
+const descriptions = Object.fromEntries(cases.map(([id, name, reason]) => [id, {name, reason}]));
+const forteCases = [
+  ["after_action_blind_retry", "Blind retry"],
+  ["after_action_protected_retry", "Protected retry"]
+];
+const stationCases = [
+  [forteCases[0][0], "In-memory command history"],
+  [forteCases[1][0], "Persistent command history"]
+];
+const modeNames = {suite: "Recovery suite", observer_outage: "Observer outage", forte: "FORTE comparison",
+                   station_restart: "Station restart"};
+const $ = id => document.getElementById(id);
+const embeddedEvidence = $("embedded-evidence");
+const state = {
+  online: false, busy: false, posting: false, report: null, lastRun: null,
+  selected: !embeddedEvidence && localStorage.getItem("recheck-case") || "after_action_blind_retry",
+  history: []
+};
+const releaseCases = new Set(["before_action_retry", "after_action_protected_retry"]);
+
+function element(tag, text, className) {
+  const node = document.createElement(tag);
+  if (text) node.textContent = text;
+  if (className) node.className = className;
+  return node;
+}
+
+async function request(path, body) {
+  const response = await fetch(path, body === undefined ? {cache: "no-store"} : {
+    method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)
+  });
+  if (!response.ok) {
+    const failure = await response.json().catch(() => ({}));
+    throw Error(failure.error || "The local runner is unavailable.");
+  }
+  return response.json();
+}
+
+function notice(message) {
+  $("notice").textContent = message;
+  $("notice").hidden = !message;
+}
+
+function rowFor(id) {
+  if (controllerComparison()) {
+    const keys = state.report.mode === "station_restart" ? ["volatile", "durable"] : ["blind", "protected"];
+    const key = id === forteCases[0][0] ? keys[0] : id === forteCases[1][0] ? keys[1] : null;
+    const result = key && state.report[key];
+    if (!result) return undefined;
+    const [baseline, before_retry, final] = result.readbacks;
+    const [original_pid, replacement_pid] = result.controller_pids;
+    return {...result, case: id, baseline, before_retry, final, original_pid, replacement_pid,
+            verdict: result.release_blocked ? "regression" : "pass"};
+  }
+  return state.report?.cases?.find(row => row.case === id);
+}
+
+function controllerComparison(report = state.report) {
+  return report?.mode === "forte" || report?.mode === "station_restart";
+}
+
+function renderControls() {
+  $("connection").textContent = embeddedEvidence ? "Recorded QNX run" :
+    state.online ? "Local runner ready" : "Captured evidence";
+  const busy = !state.online || state.busy || state.posting;
+  $("run-forte").disabled = busy || !state.forteAvailable;
+  $("run-station").disabled = busy || !state.stationAvailable;
+  $("run").disabled = busy || !releaseCases.size;
+  $("outage").disabled = busy;
+  $("policy-export").disabled = !releaseCases.size;
+  $("cancel").hidden = !state.busy;
+  $("export").disabled = !state.report;
+}
+
+function renderPolicy() {
+  const report = state.report;
+  const selected = report?.selected_cases;
+  const same = selected?.length === releaseCases.size && selected.every(id => releaseCases.has(id));
+  const result = $("policy-result");
+  result.textContent = !releaseCases.size ? "Select at least one case." :
+    report?.verdict === "suite_verified" && same && !report.sample ?
+      (report.release_blocked ? "Selected release blocked" : "Selected release passed") :
+      "Run the selected policy to get a verdict.";
+}
+
+function setupPolicy() {
+  for (const [id, title] of cases) {
+    const label = element("label", "", "policy-case");
+    const input = element("input");
+    input.type = "checkbox";
+    input.checked = releaseCases.has(id);
+    input.addEventListener("change", () => {
+      if (input.checked) releaseCases.add(id);
+      else releaseCases.delete(id);
+      renderControls();
+      renderPolicy();
+    });
+    label.append(input, element("span", title));
+    $("policy-cases").append(label);
+  }
+}
+
+function selectCase(id, focus = false) {
+  state.selected = id;
+  $("step").value = $("step").max;
+  if (!embeddedEvidence) localStorage.setItem("recheck-case", id);
+  render();
+  if (focus) {
+    const button = controllerComparison() ?
+      $("comparison-results").querySelector('[aria-pressed="true"]') :
+      $("cases").querySelector('[aria-current="true"]');
+    button?.focus();
+  }
+}
+
+function renderCases() {
+  const isForte = controllerComparison();
+  const sidebar = $("cases").closest("aside");
+  sidebar.hidden = isForte;
+  sidebar.parentElement.classList.toggle("forte-workspace", isForte);
+  if (isForte) return;
+  const buttons = cases.map(([id, title]) => {
+    const button = element("button", "", "case");
+    button.type = "button";
+    button.setAttribute("aria-current", String(state.selected === id));
+    const result = rowFor(id)?.verdict;
+    button.append(
+      element("span", title, "case-label"),
+      element("span", "", "case-status " + (result || ""))
+    );
+    button.setAttribute("aria-label", title + (result ? ", " + labels[result] : ""));
+    button.addEventListener("click", () => selectCase(id, true));
+    return button;
+  });
+  $("cases").replaceChildren(...buttons);
+}
+
+function renderComparison() {
+  const station = state.report?.mode === "station_restart";
+  const entries = (station ? stationCases : forteCases).map(([id, title]) => [rowFor(id), title]);
+  $("comparison").hidden = entries.some(([row]) => !row);
+  if ($("comparison").hidden) return;
+  const isForte = state.report?.mode === "forte";
+  $("comparison-title").textContent = station ? "Can the station remember a command after a restart?" :
+    isForte ? "Same FORTE workflow, two retry policies" : "Same lost reply, different outcomes";
+  $("comparison-description").textContent = station ?
+    "The station restarts after its first advance. Both trials replay the same command from the same FORTE build." : isForte ?
+    "A fresh controller sends the same command. The station’s own readback decides whether the release passes." :
+    "The controller exits after the carton moves. The station’s own readback decides the result.";
+
+  const buttons = entries.map(([row, title]) => {
+    const button = element("button", "", "comparison-case " + row.verdict);
+    button.type = "button";
+    button.setAttribute("aria-pressed", String(state.selected === row.case));
+    const count = row.observed_advances;
+    const result = element("span", "", "comparison-result");
+    result.append(element("strong", String(count)), element("span", count === 1 ? "advance" : "advances"));
+    button.append(element("span", title, "comparison-label"), result,
+                  element("span", row.release_blocked ? "Release blocked" : "Release passed", "comparison-verdict"));
+    button.addEventListener("click", () => {
+      selectCase(row.case);
+      $("comparison-results").querySelector('[aria-pressed="true"]')?.focus();
+    });
+    return button;
+  });
+  $("comparison-results").replaceChildren(...buttons);
+}
+
+function addLane(name, cells) {
+  const lane = element("div", "", "lane");
+  lane.append(element("div", name, "lane-label"));
+  for (const [title, detail, emphasis] of cells) {
+    const cell = element("div", "", emphasis ? "event emphasis" : "event");
+    cell.append(element("b", title), element("span", detail));
+    lane.append(cell);
+  }
+  $("timeline").append(lane);
+}
+
+function renderTimeline(row) {
+  $("timeline").replaceChildren();
+  $("command").textContent = row ? "Command " + row.command_id : "";
+  $("scrubber").hidden = !row;
+  if (!row) {
+    $("timeline").append(element("p", "A completed case will show the controller events and station readbacks here."));
+    return;
+  }
+  const before = row.before_retry - row.baseline;
+  const noReply = row.caller_reply === "ESRCH";
+  const crashAfterReply = row.case === "after_reply_control";
+  if (controllerComparison()) {
+    addLane("FORTE on QNX", [
+      ["Command sent", "FORTE process " + row.original_pid],
+      ["Station acknowledged", "FORTE exited before the block returned", true],
+      ["Same ID retried", "Replacement process " + row.replacement_pid]
+    ]);
+  } else addLane("QNX caller", [
+    ["Command sent", "Controller PID " + row.original_pid],
+    [noReply ? "Reply lost" : "Reply received", noReply ? "ESRCH · controller exited" : crashAfterReply ? "Controller exited after reply" : "Acknowledged", noReply],
+    [row.replacement_pid ? "Same ID retried" : "No retry", row.replacement_pid ? "Replacement PID " + row.replacement_pid : ""]
+  ]);
+  addLane("Station observer", [
+    ["Baseline read", "0 advances for this case"],
+    ["First readback", before + (before === 1 ? " advance" : " advances")],
+    ["Final readback", row.observed_advances + (row.observed_advances === 1 ? " advance" : " advances"), row.release_blocked]
+  ]);
+  if (row.station_restart) {
+    const [original, replacement] = row.station_restart.process_ids;
+    addLane("Station process", [
+      ["Write committed", "Original station PID " + original],
+      ["Station replaced", "New station PID " + replacement, true],
+      ["Count restored before retry", row.station_restart.readback_after_restart + " advance"]
+    ]);
+  }
+}
+
+function drawStation(count) {
+  const canvas = $("station");
+  const context = canvas.getContext("2d");
+  const width = canvas.width, height = canvas.height;
+  context.clearRect(0, 0, width, height);
+  context.strokeStyle = "#304137";
+  context.lineWidth = 1;
+  for (let x = 16; x < width; x += 32) {
+    context.beginPath(); context.moveTo(x, 0); context.lineTo(x, height); context.stroke();
+  }
+  for (let y = 14; y < height; y += 32) {
+    context.beginPath(); context.moveTo(0, y); context.lineTo(width, y); context.stroke();
+  }
+  const track = [74, 81, 568, 99];
+  context.fillStyle = "#35493d";
+  context.fillRect(...track);
+  context.strokeStyle = "#91a58d";
+  context.strokeRect(...track);
+  context.strokeStyle = "#546d5b";
+  context.lineWidth = 3;
+  for (let x = 90; x < 640; x += 22) {
+    context.beginPath(); context.moveTo(x, 89); context.lineTo(x, 173); context.stroke();
+  }
+  const slots = [151, 357, 558];
+  context.setLineDash([7, 6]);
+  context.strokeStyle = "#b6d481";
+  context.strokeRect(312, 86, 90, 90);
+  context.setLineDash([]);
+  context.font = "500 15px monospace";
+  context.textAlign = "center";
+  context.fillStyle = "#b8cbb8";
+  ["START", "EXPECTED", "EXTRA STEP"].forEach((label, index) => context.fillText(label, slots[index], 208));
+  if (count === null) return;
+  const x = slots[Math.min(count, 2)];
+  context.fillStyle = count === 2 ? "#f3aa77" : "#d9ee8c";
+  context.fillRect(x - 36, 95, 72, 72);
+  context.strokeStyle = "#283328";
+  context.lineWidth = 2;
+  context.strokeRect(x - 36, 95, 72, 72);
+  context.beginPath(); context.moveTo(x - 36, 117); context.lineTo(x + 36, 117); context.stroke();
+  context.fillStyle = "#293c2b";
+  context.fillRect(x - 13, 130, 26, 20);
+  context.fillStyle = "#d9ee8c";
+  context.fillText(String(count), x, 146);
+}
+
+function renderTechnical(row) {
+  const report = state.report;
+  const entries = report ? [
+    ["Target", report.target || "QNX recovery runner"],
+    ["Command transport", report.command_transport],
+    ["Observer", report.observer],
+    ["Controller runtime", report.upstream],
+    ["FORTE commit", report.upstream_commit],
+    ["Workflow", report.scenario],
+    ["QNX image SHA-256", row?.image_sha256 || report.image_sha256],
+    ["Run ID", report.run_id],
+    ["Station readbacks", row && [row.baseline, row.before_retry, row.final].join(" → ")],
+    ["Interleaved command IDs", report.history && "Earlier command replay and conflicting payload verified"]
+  ] : [];
+  $("technical").replaceChildren(...entries.filter(([, value]) => value)
+    .flatMap(([key, value]) => [element("dt", key), element("dd", value)]));
+}
+
+function renderHistory() {
+  const buttons = state.history.map(run => {
+    const time = new Date(run.started_at).toLocaleString();
+    const button = element("button", "", "history-row subtle");
+    button.type = "button";
+    button.setAttribute("aria-current", String(state.report?.run_id === run.run_id));
+    button.append(element("strong", modeNames[run.mode] || "Recovery test"),
+                  element("span", time));
+    button.addEventListener("click", async () => {
+      try {
+        showReport(await request("/api/runs/" + run.run_id));
+      } catch (error) { notice(error.message); }
+    });
+    return button;
+  });
+  $("history").replaceChildren(...(buttons.length ? buttons : [element("p", "Your completed runs appear here.")]));
+}
+
+function render() {
+  const report = state.report;
+  const row = rowFor(state.selected);
+  const isForte = controllerComparison();
+  const station = report?.mode === "station_restart";
+  const forteCase = (station ? stationCases : forteCases).find(([id]) => id === state.selected);
+  const outcome = ["incomplete", "canceled"].includes(report?.verdict) ? report.verdict :
+    row?.verdict || "";
+  $("source").textContent = embeddedEvidence ? "Recorded FORTE run · QNX 8.0" :
+    report?.sample ? "Captured QNX run" : isForte ? "Local FORTE run · QNX 8.0" :
+    report?.run_id === state.lastRun && report ? "Latest local run" : report ? "Saved local run" : "QNX recovery test";
+  $("case-title").textContent = report?.mode === "observer_outage" ? "Observer outage" :
+    isForte ? (row ? forteCase[1] : modeNames[report.mode]) : descriptions[state.selected]?.name || "Command recovery";
+  $("verdict").textContent = labels[outcome] || "Awaiting evidence";
+  $("verdict").className = "verdict " + (outcome || "");
+  $("observed").replaceChildren(document.createTextNode((row?.observed_advances ?? "—") + " "), element("small", "/ 1"));
+  const forteReason = row && (row.final === row.before_retry ?
+    "The replacement process sent the same command ID. The retry added no advance." :
+    "The replacement process sent the same command ID. The station count changed from " + row.before_retry + " to " + row.final + ".");
+  $("reason").textContent = report?.reason || (row ? (isForte ? forteReason : descriptions[row.case].reason) :
+    (outcome === "canceled" ? "The test was canceled before verification." : "Run QNX to collect a fresh result."));
+  $("compare").hidden = !["after_action_blind_retry", "before_action_suppressed"].includes(row?.case);
+  $("compare").replaceChildren(
+    document.createTextNode(station ? "View persistent history " : isForte ? "View protected retry " : "Compare with correction "),
+    element("span", "→")
+  );
+  renderControls();
+  renderPolicy();
+  renderComparison();
+  renderCases();
+  renderTimeline(row);
+  renderStation(row);
+  renderTechnical(row);
+  renderHistory();
+}
+
+function renderStation(row) {
+  if (!row) {
+    drawStation(null);
+    return;
+  }
+  const checkpoints = [
+    ["Baseline", 0],
+    ["After first attempt", row.before_retry - row.baseline]
+  ];
+  if (row.station_restart) {
+    checkpoints.push(["After station restart", row.station_restart.readback_after_restart]);
+  }
+  checkpoints.push(["Final readback", row.observed_advances]);
+  const step = $("step");
+  if (!step.dataset.case || step.dataset.case !== row.case || step.max !== String(checkpoints.length - 1)) {
+    step.dataset.case = row.case;
+    step.max = String(checkpoints.length - 1);
+    step.value = step.max;
+  }
+  const [label, advances] = checkpoints[Number(step.value)];
+  $("step-label").textContent = label;
+  $("step").setAttribute("aria-valuetext", label + ", " + advances + " advances");
+  $("observed").replaceChildren(document.createTextNode(advances + " "), element("small", "/ 1"));
+  drawStation(advances);
+}
+
+function showReport(report, newRun = false) {
+  if (controllerComparison(report) && (newRun || !forteCases.some(([id]) => id === state.selected))) {
+    state.selected = forteCases[0][0];
+  }
+  state.report = report;
+  $("step").value = $("step").max;
+  notice("");
+  render();
+}
+
+function runningMessage(mode) {
+  if (mode === "station_restart") return "Restarting both station processes and checking what each one remembers…";
+  return mode === "forte" ?
+    "Running both FORTE policies on QNX. Waiting for independent station readbacks…" :
+    "QNX is running the recovery test. Waiting for station evidence…";
+}
+
+async function sync() {
+  if (state.syncing) return;
+  state.syncing = true;
+  try {
+    const remote = await request("/api/state");
+    if (!remote.release_selection) {
+      state.online = false;
+      renderControls();
+      notice("Reopen Recheck from the desktop shortcut to load the release policy runner.");
+      return;
+    }
+    state.online = true;
+    state.forteAvailable = remote.forte_comparison === true;
+    state.stationAvailable = remote.station_restart === true;
+    const wasBusy = state.busy;
+    state.busy = Boolean(remote.active);
+    state.history = remote.history;
+    const latest = remote.latest || remote.history[0]?.run_id;
+    if (latest && latest !== state.lastRun) {
+      const report = await request("/api/runs/" + latest);
+      state.lastRun = latest;
+      showReport(report, state.waiting);
+      state.waiting = false;
+    } else {
+      renderControls();
+      if (!state.busy && state.waiting) {
+        state.waiting = false;
+        notice("The runner stopped before it produced a report.");
+      } else if (wasBusy && !state.busy) notice("");
+    }
+    if (state.busy) notice(runningMessage(remote.active));
+    else if (remote.error) notice(remote.error);
+  } catch (error) {
+    state.online = false;
+    state.busy = false;
+    renderControls();
+    if (state.waiting) notice(error.message);
+  } finally {
+    state.syncing = false;
+  }
+}
+
+async function start(mode) {
+  if (state.posting || state.busy) return;
+  state.posting = true;
+  renderControls();
+  try {
+    await request("/api/run", mode === "suite" ? {mode, cases: [...releaseCases]} : {mode});
+    state.waiting = true;
+    state.busy = true;
+    notice(runningMessage(mode));
+  } catch (error) {
+    notice(error.message);
+  } finally {
+    state.posting = false;
+    renderControls();
+  }
+}
+
+$("run").addEventListener("click", () => start("suite"));
+$("run-forte").addEventListener("click", () => start("forte"));
+$("run-station").addEventListener("click", () => start("station_restart"));
+$("step").addEventListener("input", () => renderStation(rowFor(state.selected)));
+$("outage").addEventListener("click", () => start("observer_outage"));
+$("compare").addEventListener("click", () => selectCase(state.selected === "before_action_suppressed" ?
+  "before_action_retry" : "after_action_protected_retry", true));
+$("cancel").addEventListener("click", async () => {
+  try { await request("/api/cancel", {}); }
+  catch (error) { notice(error.message); }
+});
+function downloadJson(value, name) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2) + "\n"], {type: "application/json"}));
+  const link = element("a");
+  link.href = url;
+  link.download = name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+$("export").addEventListener("click", () => downloadJson(state.report, "recheck-" + (state.report.run_id || "captured") + ".json"));
+$("policy-export").addEventListener("click", () => downloadJson({cases: [...releaseCases]}, "recheck-policy.json"));
+
+async function boot() {
+  render();
+  try {
+    state.report = {...await request("sample.json"), sample: true};
+    render();
+  } catch (error) {
+    notice("Captured evidence could not be opened.");
+  }
+  while (true) {
+    await sync();
+    await new Promise(resolve => setTimeout(resolve, 800));
+  }
+}
+
+if (embeddedEvidence) {
+  $("run-station").hidden = true;
+  $("policy-title").closest("section").hidden = true;
+  $("history").closest("details").hidden = true;
+  showReport(JSON.parse(embeddedEvidence.textContent));
+} else {
+  setupPolicy();
+  boot();
+}
+</script>
+</body>
+</html>

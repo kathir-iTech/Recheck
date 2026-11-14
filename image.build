@@ -1,0 +1,69 @@
+[virtual=x86_64,multiboot] boot = {
+    startup-x86 -D8250..115200 -zz
+    PATH=/proc/boot LD_LIBRARY_PATH=/proc/boot procnto-smp-instr
+}
+[+script] init = {
+    procmgr_symlink /proc/boot/ldqnx-64.so.2 /usr/lib/ldqnx-64.so.2
+    procmgr_symlink /proc/boot/qcrypto.conf /etc/qcrypto.conf
+    procmgr_symlink /proc/boot/qcrypto-openssl-3.so /lib/dll/qcrypto-openssl-3.so
+    procmgr_symlink /dev/shmem /tmp
+    procmgr_symlink /proc/boot /lib/dll/pci
+    display_msg INDUSTRIAL_BOOT_START
+    /proc/boot/slogger2 &
+    waitfor /dev/shmem/slogger2 2
+    /proc/boot/random &
+    waitfor /dev/random 5
+    /proc/boot/pci-server -vv --aspace-enable --config=/proc/boot/pci_server.cfg &
+    waitfor /dev/shmem/pci/pci_hw 8
+    display_msg INDUSTRIAL_PCI_WAIT_FINISHED
+    /proc/boot/io-sock -m /proc/boot/mods-phy.so -m /proc/boot/mods-pci.so -d /proc/boot/devs-em.so &
+    waitfor /dev/socket 10
+    display_msg INDUSTRIAL_NETWORK_WAIT_FINISHED
+    waitfor /dev/bpf 3
+    /proc/boot/pci-tool -v
+    /proc/boot/ifconfig em0 10.0.2.15 netmask 255.255.255.0 up
+    /proc/boot/ifconfig -a
+    /proc/boot/modbus_probe
+    /proc/boot/slog2info
+}
+[perms=0444] qcrypto.conf = {
+openssl-3 tags=*
+}
+[perms=0444] pci_server.cfg = {
+[buscfg]
+DO_BUS_CONFIG=yes
+PCI_SERVER_BUSCFG_MODULE=/proc/boot/pci_server-buscfg-generic.so
+[envars]
+PCI_HW_MODULE=/proc/boot/pci_hw-Intel_x86.so
+PCI_DEBUG_MODULE=/proc/boot/pci_debug2.so
+PCI_HW_CONFIG_FILE=/proc/boot/pci_hw.cfg
+}
+[perms=0444] pci_hw.cfg = {
+[interrupts]
+B0:D17:F0 A 18
+B0:D17:F0 B 19
+B0:D17:F0 C 16
+B0:D17:F0 D 17
+B3:D0:F0 A 18
+B3:D0:F0 B 19
+B3:D0:F0 C 16
+B3:D0:F0 D 17
+}
+ldqnx-64.so.2
+[autoso=add]
+slogger2
+slog2info
+random
+pci-server
+pci-tool
+io-sock
+ifconfig
+pci_hw-Intel_x86.so=${QNX_TARGET}/x86_64/lib/dll/pci/pci_hw-Intel_x86.so.3.1
+pci_debug2.so=${QNX_TARGET}/x86_64/lib/dll/pci/pci_debug2.so.3.0
+pci_slog2.so=${QNX_TARGET}/x86_64/lib/dll/pci/pci_slog2.so.3.0
+pci_server-buscfg-generic.so=${QNX_TARGET}/x86_64/lib/dll/pci/pci_server-buscfg-generic.so.3.0
+libpci_hw_common.so.3.0
+mods-phy.so=${QNX_TARGET}/x86_64/lib/dll/mods-phy.so
+mods-pci.so=${QNX_TARGET}/x86_64/lib/dll/mods-pci.so
+devs-em.so=${QNX_TARGET}/x86_64/lib/dll/devs-em.so
+qcrypto-openssl-3.so=${QNX_TARGET}/x86_64/lib/dll/qcrypto-openssl-3.so

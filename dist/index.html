@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151a17">
+  <title>Recheck · QNX Recovery Workbench</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="identity"><span class="mark" aria-hidden="true">↻</span><span>Recheck</span><small>QNX Recovery Workbench</small></div>
+    <div class="header-actions"><span class="connection" id="connection">Connecting</span><button id="export" class="subtle" type="button" disabled>Download evidence <span aria-hidden="true">↓</span></button></div>
+  </header>
+  <main>
+    <section class="intro" aria-labelledby="title">
+      <div><p class="location">Release tests <span aria-hidden="true">/</span> Packaging cell</p><h1>Command recovery</h1>
+      <p class="lede">One command should move one carton. See whether a restart makes the station move it twice.</p></div>
+      <div class="run-actions"><button id="cancel" type="button" class="subtle" hidden>Cancel</button><button id="run-station" class="primary" type="button" disabled><span aria-hidden="true">▶</span> Test station restart</button></div>
+    </section>
+    <p class="notice" id="notice" role="status" hidden></p>
+    <section id="comparison" class="comparison panel" aria-labelledby="comparison-title" hidden>
+      <div class="comparison-intro">
+        <h2 id="comparison-title">Same lost reply, different outcomes</h2>
+        <p id="comparison-description">The controller exits after the carton moves. The station’s own readback decides the result.</p>
+      </div>
+      <div class="comparison-results" id="comparison-results"></div>
+    </section>
+    <div class="workspace">
+      <aside class="scenarios panel" aria-labelledby="scenarios-title">
+        <div class="panel-head"><h2 id="scenarios-title">Test cases</h2></div>
+        <nav id="cases" aria-label="Recovery cases"></nav>
+      </aside>
+      <section class="result panel" aria-labelledby="case-title">
+        <div class="result-head"><div><p id="source" class="mono source">Captured QNX run</p><h2 id="case-title">Crash after action</h2></div><span id="verdict" class="verdict">Awaiting evidence</span></div>
+        <div class="stage">
+          <div class="stage-copy"><span>Packaging station</span><strong id="observed">— <small>/ 1</small></strong><span>Observed advances</span></div>
+          <canvas id="station" width="720" height="250" aria-hidden="true"></canvas>
+          <span class="simulation">Simulated station</span>
+        </div>
+        <div class="result-foot"><p id="reason"></p><button id="compare" class="subtle" type="button" hidden>Compare with correction <span aria-hidden="true">→</span></button></div>
+      </section>
+    </div>
+    <section class="panel timeline" aria-labelledby="timeline-title">
+      <div class="panel-head"><h2 id="timeline-title">What happened</h2><span id="command" class="mono"></span></div>
+      <div class="timeline-body" id="timeline"></div>
+      <div id="scrubber" class="scrubber" hidden><label for="step">Inspect station readbacks</label><input id="step" type="range" min="0" max="2" value="2" step="1"><output id="step-label" for="step"></output></div>
+    </section>
+    <section class="panel release-policy" aria-labelledby="policy-title">
+      <div>
+        <h2 id="policy-title">Reference suite and CI policy</h2>
+        <p>Each selected case must advance exactly once. QNX runs the full reference suite and gates on your selection.</p>
+      </div>
+      <div id="policy-cases" class="policy-cases" role="group" aria-label="Cases that gate the release"></div>
+      <div class="policy-actions">
+        <button id="run" class="subtle" type="button" disabled>Run recovery test</button>
+        <button id="run-forte" class="subtle" type="button" disabled>Run FORTE comparison</button>
+        <button id="outage" class="subtle" type="button" disabled>Test observer outage</button>
+        <button id="policy-export" class="subtle" type="button" disabled>Export CI policy</button>
+        <span id="policy-result" role="status"></span>
+      </div>
+    </section>
+    <div class="lower">
+      <details class="panel"><summary>Technical evidence</summary><dl id="technical"></dl></details>
+      <details class="panel"><summary>Recent runs</summary><div id="history"></div></details>
+    </div>
+  </main>
+  <footer>Recheck <span>QNX 8.0 · QEMU · Modbus station</span></footer>
+</body>
+</html>

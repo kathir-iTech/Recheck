@@ -1,0 +1,24 @@
+diff --git a/core/arch/posix/CMakeLists.txt b/core/arch/posix/CMakeLists.txt
+--- a/core/arch/posix/CMakeLists.txt
++++ b/core/arch/posix/CMakeLists.txt
+@@ -16,11 +16,15 @@
+ 
+ include(CheckLinkerFlag)
+ 
+-target_link_libraries(forte-core PUBLIC
+-        pthread
+-        $<$<NOT:$<BOOL:${APPLE}>>:rt>
+-        $<$<BOOL:${BUILD_SHARED_LIBS}>:dl>
+-)
++if(CMAKE_SYSTEM_NAME STREQUAL "QNX")
++    target_link_libraries(forte-core PUBLIC socket)
++else()
++    target_link_libraries(forte-core PUBLIC
++            pthread
++            $<$<NOT:$<BOOL:${APPLE}>>:rt>
++            $<$<BOOL:${BUILD_SHARED_LIBS}>:dl>
++    )
++endif()
+ 
+ set(FORTE_POSIX_GENERATE_MAP_FILE FALSE CACHE BOOL "Enable the generation of map files")
+ mark_as_advanced(FORTE_POSIX_GENERATE_MAP_FILE)

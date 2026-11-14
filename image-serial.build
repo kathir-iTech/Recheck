@@ -1,0 +1,13 @@
+[virtual=x86_64,multiboot] boot = {
+    startup-x86 -D8250
+    PATH=/proc/boot LD_LIBRARY_PATH=/proc/boot procnto-smp-instr
+}
+[+script] init = {
+    procmgr_symlink /proc/boot/ldqnx-64.so.2 /usr/lib/ldqnx-64.so.2
+    /proc/boot/devc-ser8250 -F -b115200 2f8,3 &
+    waitfor /dev/ser1 10
+    /proc/boot/modbus_probe
+}
+ldqnx-64.so.2
+[autoso=add]
+devc-ser8250

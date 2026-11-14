@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+runs/
+*.ifs
+*.fboot
+*.so
+*.sqlite*
+*.log
+modbus_probe
+recovery_probe
+forte-supervisor
