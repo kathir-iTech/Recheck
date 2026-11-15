@@ -71,7 +71,35 @@ h1{font-size:clamp(34px,5vw,64px);line-height:.99;letter-spacing:-.055em;margin:
 .policy-case input {margin: 0; accent-color: #45684c;}
 .policy-actions {display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 12px;}
 .policy-actions .subtle {min-height: 30px; padding: 4px 8px;}
-#policy-result {font-weight: 700; color: var(--green);}</style>
+#policy-result {font-weight: 700; color: var(--green);}
+
+a.primary {text-decoration: none;}
+a:focus-visible {outline: 3px solid #578759; outline-offset: 3px;}
+.recorded .intro {margin-block: clamp(25px, 5vw, 65px) 30px;}
+.intro h1 {font-size: clamp(34px, 6vw, 76px); text-wrap: balance;}
+.panel {box-shadow: 0 12px 35px #182c1510;}
+.comparison-case {min-height: 62px;}
+.comparison-result strong {font-size: 29px;}
+.station-map {min-width: 0; position: relative;}
+.station-map canvas {height: auto; max-height: 245px;}
+.station-scale {
+  position: absolute;
+  inset: auto 8% 14% 8%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  color: #cedbc9;
+  font: 500 clamp(8px, 1.1vw, 12px) var(--mono);
+  text-align: center;
+}
+.simulation {background: #1c2820; padding: 2px 4px; border-radius: 3px;}
+.scrubber .subtle {min-height: 34px; padding: 5px 10px;}
+.scrubber output {font-weight: 700;}
+.recorded .lower {grid-template-columns: minmax(0, 1fr);}
+@media (max-width: 620px) {
+  .station-map canvas {min-height: 108px;}
+  .station-scale {inset: auto 3% 9% 3%;}
+  .comparison-case {min-height: 61px;}
+}</style>
 </head>
 <body>
   <header class="masthead">
@@ -80,9 +108,9 @@ h1{font-size:clamp(34px,5vw,64px);line-height:.99;letter-spacing:-.055em;margin:
   </header>
   <main>
     <section class="intro" aria-labelledby="title">
-      <div><p class="location">Release tests <span aria-hidden="true">/</span> Packaging cell</p><h1>Command recovery</h1>
-      <p class="lede">One command should move one carton. See whether a restart makes the station move it twice.</p></div>
-      <div class="run-actions"><button id="cancel" type="button" class="subtle" hidden>Cancel</button><button id="run-station" class="primary" type="button" disabled><span aria-hidden="true">▶</span> Test station restart</button></div>
+      <div><p class="location">QNX 8.0 · Packaging cell simulation</p><h1>One command. One carton.</h1>
+      <p class="lede">A restart can turn one command into two moves. Recheck measures what the station actually did.</p></div>
+      <div class="run-actions"><button id="cancel" type="button" class="subtle" hidden>Cancel</button><button id="run-station" class="primary" type="button" disabled><span aria-hidden="true">▶</span> Test station restart</button><a id="source-link" class="primary" href="https://github.com/kathir-iTech/Recheck" hidden>View source and setup <span aria-hidden="true">↗</span></a></div>
     </section>
     <p class="notice" id="notice" role="status" hidden></p>
     <section id="comparison" class="comparison panel" aria-labelledby="comparison-title" hidden>
@@ -100,8 +128,8 @@ h1{font-size:clamp(34px,5vw,64px);line-height:.99;letter-spacing:-.055em;margin:
       <section class="result panel" aria-labelledby="case-title">
         <div class="result-head"><div><p id="source" class="mono source">Captured QNX run</p><h2 id="case-title">Crash after action</h2></div><span id="verdict" class="verdict">Awaiting evidence</span></div>
         <div class="stage">
-          <div class="stage-copy"><span>Packaging station</span><strong id="observed">— <small>/ 1</small></strong><span>Observed advances</span></div>
-          <canvas id="station" width="720" height="250" aria-hidden="true"></canvas>
+          <div class="stage-copy"><span id="station-checkpoint">Final readback</span><strong id="observed" aria-live="polite">— <small>/ 1</small></strong><span>Moves observed / expected</span></div>
+          <div class="station-map"><canvas id="station" width="720" height="250" aria-hidden="true"></canvas><div class="station-scale" aria-hidden="true"><span>Start</span><span>Expected</span><span>Extra move</span></div></div>
           <span class="simulation">Simulated station</span>
         </div>
         <div class="result-foot"><p id="reason"></p><button id="compare" class="subtle" type="button" hidden>Compare with correction <span aria-hidden="true">→</span></button></div>
@@ -110,7 +138,7 @@ h1{font-size:clamp(34px,5vw,64px);line-height:.99;letter-spacing:-.055em;margin:
     <section class="panel timeline" aria-labelledby="timeline-title">
       <div class="panel-head"><h2 id="timeline-title">What happened</h2><span id="command" class="mono"></span></div>
       <div class="timeline-body" id="timeline"></div>
-      <div id="scrubber" class="scrubber" hidden><label for="step">Inspect station readbacks</label><input id="step" type="range" min="0" max="2" value="2" step="1"><output id="step-label" for="step"></output></div>
+      <div id="scrubber" class="scrubber" hidden><button id="replay" class="subtle" type="button">Replay checkpoints</button><label for="step">Station readbacks</label><input id="step" type="range" min="0" max="2" value="2" step="1"><output id="step-label" for="step"></output></div>
     </section>
     <section class="panel release-policy" aria-labelledby="policy-title">
       <div>
@@ -132,7 +160,7 @@ h1{font-size:clamp(34px,5vw,64px);line-height:.99;letter-spacing:-.055em;margin:
     </div>
   </main>
   <footer>Recheck <span>QNX 8.0 · QEMU · Modbus station</span></footer>
-<script id="embedded-evidence" type="application/json">{"target": "QNX 8.0 x86-64 in QEMU", "upstream": "Eclipse 4diac FORTE 3.3.0", "scenario": "Same protected controller image, host station process replaced after first write", "observer": "Separate Modbus/TCP station readback before and after replacement", "volatile": {"image_sha256": "99219a87f9ec6edd6e38d390be64f4bd29a384222e305003f8f34029ae0b17e7", "controller_pids": [4, 8196], "command_id": 41, "checkpoint": "station write acknowledged before adapter returns", "observed_advances": 2, "readbacks": [0, 1, 2], "release_blocked": true, "station_events": [{"command_id": 41, "advance": 1}, {"command_id": 41, "advance": 2}], "guest_log": "evidence-volatile.guest.log", "station_restart": {"process_ids": [5372, 7860], "checkpoint": "first write committed and acknowledged to bridge before QNX receives its reply", "readback_after_restart": 1, "durable_command_history": false}}, "durable": {"image_sha256": "99219a87f9ec6edd6e38d390be64f4bd29a384222e305003f8f34029ae0b17e7", "controller_pids": [4, 8196], "command_id": 41, "checkpoint": "station write acknowledged before adapter returns", "observed_advances": 1, "readbacks": [0, 1, 1], "release_blocked": false, "station_events": [{"command_id": 41, "advance": 1}], "guest_log": "evidence-durable.guest.log", "station_restart": {"process_ids": [8540, 2976], "checkpoint": "first write committed and acknowledged to bridge before QNX receives its reply", "readback_after_restart": 1, "durable_command_history": true}}, "schema_version": 1, "verdict": "comparison_verified", "release_blocked": false, "logs": {"evidence-durable.guest.log": "\nnon UEFI or UEFI+CSM boot\nACPI table not found (0x4746434d)\nSystem behaves poorly without PCID support.\noverriding mask for controller 2, vector_base 0\nERROR: T#1794666962023509000: CBSDSocketInterface: Couldn't create socket: Address family not supported by protocol family\nFORTE_EFFECT_ACK pid=4 command=41 counter=2 register=10\nFORTE_EXIT attempt=1 pid=4 status=86\nERROR: T#1794666972839773000: CBSDSocketInterface: Couldn't create socket: Address family not supported by protocol family\nFORTE_EFFECT_ACK pid=8196 command=41 counter=2 register=10\nFORTE_EXIT attempt=2 pid=8196 status=86\nFORTE_RECOVERY_DONE\n", "evidence-durable.qemu.log": "D:\\QNX\\qemu\\qemu-system-x86_64.exe: -serial tcp:127.0.0.1:55201,server=on,wait=on: info: QEMU waiting for connection on: disconnected:tcp:127.0.0.1:55201,server=on\n", "evidence-durable.station.log": "", "evidence-volatile.guest.log": "\nnon UEFI or UEFI+CSM boot\nACPI table not found (0x4746434d)\nSystem behaves poorly without PCID support.\noverriding mask for controller 2, vector_base 0\nERROR: T#1794666935547443000: CBSDSocketInterface: Couldn't create socket: Address family not supported by protocol family\nFORTE_EFFECT_ACK pid=4 command=41 counter=2 register=10\nFORTE_EXIT attempt=1 pid=4 status=86\nERROR: T#1794666945253320000: CBSDSocketInterface: Couldn't create socket: Address family not supported by protocol family\nFORTE_EFFECT_ACK pid=8196 command=41 counter=2 register=10\nFORTE_EXIT attempt=2 pid=8196 status=86\nFORTE_RECOVERY_DONE\n", "evidence-volatile.qemu.log": "D:\\QNX\\qemu\\qemu-system-x86_64.exe: -serial tcp:127.0.0.1:55117,server=on,wait=on: info: QEMU waiting for connection on: disconnected:tcp:127.0.0.1:55117,server=on\n", "evidence-volatile.station.log": ""}, "run_id": "33694f69a91240329e9aa40902d669ac", "mode": "station_restart", "started_at": "2026-11-14T14:34:52.537581+00:00", "finished_at": "2026-11-14T14:36:15.485534+00:00", "selected_cases": [], "gate": {"station_history": "durable", "required_advances": 1}}</script>
+<script id="embedded-evidence" type="application/json">{"target": "QNX 8.0 x86-64 in QEMU", "upstream": "Eclipse 4diac FORTE 3.3.0", "scenario": "Same protected controller image, host station process replaced after first write", "observer": "Separate Modbus/TCP station readback before and after replacement", "volatile": {"image_sha256": "99219a87f9ec6edd6e38d390be64f4bd29a384222e305003f8f34029ae0b17e7", "controller_pids": [4, 8196], "command_id": 41, "checkpoint": "station write acknowledged before adapter returns", "observed_advances": 2, "readbacks": [0, 1, 2], "release_blocked": true, "station_events": [{"command_id": 41, "advance": 1}, {"command_id": 41, "advance": 2}], "guest_log": "evidence-volatile.guest.log", "station_restart": {"process_ids": [14844, 16252], "checkpoint": "first write committed and acknowledged to bridge before QNX receives its reply", "readback_after_restart": 1, "durable_command_history": false}}, "durable": {"image_sha256": "99219a87f9ec6edd6e38d390be64f4bd29a384222e305003f8f34029ae0b17e7", "controller_pids": [4, 8196], "command_id": 41, "checkpoint": "station write acknowledged before adapter returns", "observed_advances": 1, "readbacks": [0, 1, 1], "release_blocked": false, "station_events": [{"command_id": 41, "advance": 1}], "guest_log": "evidence-durable.guest.log", "station_restart": {"process_ids": [6344, 13996], "checkpoint": "first write committed and acknowledged to bridge before QNX receives its reply", "readback_after_restart": 1, "durable_command_history": true}}, "schema_version": 1, "verdict": "comparison_verified", "release_blocked": false, "logs": {"evidence-durable.guest.log": "\nnon UEFI or UEFI+CSM boot\nACPI table not found (0x4746434d)\nSystem behaves poorly without PCID support.\noverriding mask for controller 2, vector_base 0\nERROR: T#1794711463858640000: CBSDSocketInterface: Couldn't create socket: Address family not supported by protocol family\nFORTE_EFFECT_ACK pid=4 command=41 counter=2 register=10\nFORTE_EXIT attempt=1 pid=4 status=86\nERROR: T#1794711467306944000: CBSDSocketInterface: Couldn't create socket: Address family not supported by protocol family\nFORTE_EFFECT_ACK pid=8196 command=41 counter=2 register=10\nFORTE_EXIT attempt=2 pid=8196 status=86\nFORTE_RECOVERY_DONE\n", "evidence-durable.qemu.log": "D:\\QNX\\qemu\\qemu-system-x86_64.exe: -serial tcp:127.0.0.1:57551,server=on,wait=on: info: QEMU waiting for connection on: disconnected:tcp:127.0.0.1:57551,server=on\n", "evidence-durable.station.log": "", "evidence-volatile.guest.log": "\nnon UEFI or UEFI+CSM boot\nACPI table not found (0x4746434d)\nSystem behaves poorly without PCID support.\noverriding mask for controller 2, vector_base 0\nERROR: T#1794711456927422000: CBSDSocketInterface: Couldn't create socket: Address family not supported by protocol family\nFORTE_EFFECT_ACK pid=4 command=41 counter=2 register=10\nFORTE_EXIT attempt=1 pid=4 status=86\nERROR: T#1794711460411807000: CBSDSocketInterface: Couldn't create socket: Address family not supported by protocol family\nFORTE_EFFECT_ACK pid=8196 command=41 counter=2 register=10\nFORTE_EXIT attempt=2 pid=8196 status=86\nFORTE_RECOVERY_DONE\n", "evidence-volatile.qemu.log": "D:\\QNX\\qemu\\qemu-system-x86_64.exe: -serial tcp:127.0.0.1:57537,server=on,wait=on: info: QEMU waiting for connection on: disconnected:tcp:127.0.0.1:57537,server=on\n", "evidence-volatile.station.log": ""}, "run_id": "20150f1d8b1544959f9a17d03e3b65b2", "mode": "station_restart", "started_at": "2026-11-15T02:57:29.257920+00:00", "finished_at": "2026-11-15T02:57:48.128491+00:00", "selected_cases": [], "gate": {"station_history": "durable", "required_advances": 1}}</script>
 <script>const cases = [
   ["normal", "Normal operation", "The controller replied and the station advanced once."],
   ["before_action_retry", "Crash before action · retry", "The first controller exited before acting. The replacement applied the command once."],
@@ -155,12 +183,24 @@ const modeNames = {suite: "Recovery suite", observer_outage: "Observer outage", 
                    station_restart: "Station restart"};
 const $ = id => document.getElementById(id);
 const embeddedEvidence = $("embedded-evidence");
+const defaultCase = "after_action_blind_retry";
+let savedCase = defaultCase;
+try {
+  if (!embeddedEvidence) savedCase = localStorage.getItem("recheck-case") || defaultCase;
+} catch {}
 const state = {
   online: false, busy: false, posting: false, report: null, lastRun: null,
-  selected: !embeddedEvidence && localStorage.getItem("recheck-case") || "after_action_blind_retry",
+  selected: descriptions[savedCase] ? savedCase : defaultCase,
   history: []
 };
 const releaseCases = new Set(["before_action_retry", "after_action_protected_retry"]);
+let replayTimer;
+
+function stopReplay() {
+  clearInterval(replayTimer);
+  replayTimer = undefined;
+  $("replay").textContent = "Replay checkpoints";
+}
 
 function element(tag, text, className) {
   const node = document.createElement(tag);
@@ -245,9 +285,12 @@ function setupPolicy() {
 }
 
 function selectCase(id, focus = false) {
+  stopReplay();
   state.selected = id;
   $("step").value = $("step").max;
-  if (!embeddedEvidence) localStorage.setItem("recheck-case", id);
+  try {
+    if (!embeddedEvidence) localStorage.setItem("recheck-case", id);
+  } catch {}
   render();
   if (focus) {
     const button = controllerComparison() ?
@@ -285,10 +328,10 @@ function renderComparison() {
   $("comparison").hidden = entries.some(([row]) => !row);
   if ($("comparison").hidden) return;
   const isForte = state.report?.mode === "forte";
-  $("comparison-title").textContent = station ? "Can the station remember a command after a restart?" :
+  $("comparison-title").textContent = station ? "Same command, two outcomes" :
     isForte ? "Same FORTE workflow, two retry policies" : "Same lost reply, different outcomes";
   $("comparison-description").textContent = station ?
-    "The station restarts after its first advance. Both trials replay the same command from the same FORTE build." : isForte ?
+    "Select a result to see what happened when the controller retried after the station restarted." : isForte ?
     "A fresh controller sends the same command. The station’s own readback decides whether the release passes." :
     "The controller exits after the carton moves. The station’s own readback decides the result.";
 
@@ -386,10 +429,7 @@ function drawStation(count) {
   context.strokeStyle = "#b6d481";
   context.strokeRect(312, 86, 90, 90);
   context.setLineDash([]);
-  context.font = "500 15px monospace";
   context.textAlign = "center";
-  context.fillStyle = "#b8cbb8";
-  ["START", "EXPECTED", "EXTRA STEP"].forEach((label, index) => context.fillText(label, slots[index], 208));
   if (count === null) return;
   const x = slots[Math.min(count, 2)];
   context.fillStyle = count === 2 ? "#f3aa77" : "#d9ee8c";
@@ -401,6 +441,7 @@ function drawStation(count) {
   context.fillStyle = "#293c2b";
   context.fillRect(x - 13, 130, 26, 20);
   context.fillStyle = "#d9ee8c";
+  context.font = "700 22px monospace";
   context.fillText(String(count), x, 146);
 }
 
@@ -478,6 +519,7 @@ function render() {
 
 function renderStation(row) {
   if (!row) {
+    $("station-checkpoint").textContent = "Waiting for evidence";
     drawStation(null);
     return;
   }
@@ -497,12 +539,14 @@ function renderStation(row) {
   }
   const [label, advances] = checkpoints[Number(step.value)];
   $("step-label").textContent = label;
+  $("station-checkpoint").textContent = label;
   $("step").setAttribute("aria-valuetext", label + ", " + advances + " advances");
   $("observed").replaceChildren(document.createTextNode(advances + " "), element("small", "/ 1"));
   drawStation(advances);
 }
 
 function showReport(report, newRun = false) {
+  stopReplay();
   if (controllerComparison(report) && (newRun || !forteCases.some(([id]) => id === state.selected))) {
     state.selected = forteCases[0][0];
   }
@@ -581,7 +625,27 @@ async function start(mode) {
 $("run").addEventListener("click", () => start("suite"));
 $("run-forte").addEventListener("click", () => start("forte"));
 $("run-station").addEventListener("click", () => start("station_restart"));
-$("step").addEventListener("input", () => renderStation(rowFor(state.selected)));
+$("step").addEventListener("input", () => {
+  stopReplay();
+  renderStation(rowFor(state.selected));
+});
+$("replay").addEventListener("click", () => {
+  if (replayTimer !== undefined) {
+    stopReplay();
+    return;
+  }
+  const row = rowFor(state.selected);
+  if (!row) return;
+  const step = $("step");
+  step.value = step.min;
+  renderStation(row);
+  $("replay").textContent = "Pause replay";
+  replayTimer = setInterval(() => {
+    step.stepUp();
+    renderStation(row);
+    if (step.value === step.max) stopReplay();
+  }, 800);
+});
 $("outage").addEventListener("click", () => start("observer_outage"));
 $("compare").addEventListener("click", () => selectCase(state.selected === "before_action_suppressed" ?
   "before_action_retry" : "after_action_protected_retry", true));
@@ -615,7 +679,9 @@ async function boot() {
 }
 
 if (embeddedEvidence) {
+  document.body.classList.add("recorded");
   $("run-station").hidden = true;
+  $("source-link").hidden = false;
   $("policy-title").closest("section").hidden = true;
   $("history").closest("details").hidden = true;
   showReport(JSON.parse(embeddedEvidence.textContent));

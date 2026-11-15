@@ -20,12 +20,24 @@ const modeNames = {suite: "Recovery suite", observer_outage: "Observer outage", 
                    station_restart: "Station restart"};
 const $ = id => document.getElementById(id);
 const embeddedEvidence = $("embedded-evidence");
+const defaultCase = "after_action_blind_retry";
+let savedCase = defaultCase;
+try {
+  if (!embeddedEvidence) savedCase = localStorage.getItem("recheck-case") || defaultCase;
+} catch {}
 const state = {
   online: false, busy: false, posting: false, report: null, lastRun: null,
-  selected: !embeddedEvidence && localStorage.getItem("recheck-case") || "after_action_blind_retry",
+  selected: descriptions[savedCase] ? savedCase : defaultCase,
   history: []
 };
 const releaseCases = new Set(["before_action_retry", "after_action_protected_retry"]);
+let replayTimer;
+
+function stopReplay() {
+  clearInterval(replayTimer);
+  replayTimer = undefined;
+  $("replay").textContent = "Replay checkpoints";
+}
 
 function element(tag, text, className) {
   const node = document.createElement(tag);
@@ -110,9 +122,12 @@ function setupPolicy() {
 }
 
 function selectCase(id, focus = false) {
+  stopReplay();
   state.selected = id;
   $("step").value = $("step").max;
-  if (!embeddedEvidence) localStorage.setItem("recheck-case", id);
+  try {
+    if (!embeddedEvidence) localStorage.setItem("recheck-case", id);
+  } catch {}
   render();
   if (focus) {
     const button = controllerComparison() ?
@@ -150,10 +165,10 @@ function renderComparison() {
   $("comparison").hidden = entries.some(([row]) => !row);
   if ($("comparison").hidden) return;
   const isForte = state.report?.mode === "forte";
-  $("comparison-title").textContent = station ? "Can the station remember a command after a restart?" :
+  $("comparison-title").textContent = station ? "Same command, two outcomes" :
     isForte ? "Same FORTE workflow, two retry policies" : "Same lost reply, different outcomes";
   $("comparison-description").textContent = station ?
-    "The station restarts after its first advance. Both trials replay the same command from the same FORTE build." : isForte ?
+    "Select a result to see what happened when the controller retried after the station restarted." : isForte ?
     "A fresh controller sends the same command. The station’s own readback decides whether the release passes." :
     "The controller exits after the carton moves. The station’s own readback decides the result.";
 
@@ -251,10 +266,7 @@ function drawStation(count) {
   context.strokeStyle = "#b6d481";
   context.strokeRect(312, 86, 90, 90);
   context.setLineDash([]);
-  context.font = "500 15px monospace";
   context.textAlign = "center";
-  context.fillStyle = "#b8cbb8";
-  ["START", "EXPECTED", "EXTRA STEP"].forEach((label, index) => context.fillText(label, slots[index], 208));
   if (count === null) return;
   const x = slots[Math.min(count, 2)];
   context.fillStyle = count === 2 ? "#f3aa77" : "#d9ee8c";
@@ -266,6 +278,7 @@ function drawStation(count) {
   context.fillStyle = "#293c2b";
   context.fillRect(x - 13, 130, 26, 20);
   context.fillStyle = "#d9ee8c";
+  context.font = "700 22px monospace";
   context.fillText(String(count), x, 146);
 }
 
@@ -343,6 +356,7 @@ function render() {
 
 function renderStation(row) {
   if (!row) {
+    $("station-checkpoint").textContent = "Waiting for evidence";
     drawStation(null);
     return;
   }
@@ -362,12 +376,14 @@ function renderStation(row) {
   }
   const [label, advances] = checkpoints[Number(step.value)];
   $("step-label").textContent = label;
+  $("station-checkpoint").textContent = label;
   $("step").setAttribute("aria-valuetext", label + ", " + advances + " advances");
   $("observed").replaceChildren(document.createTextNode(advances + " "), element("small", "/ 1"));
   drawStation(advances);
 }
 
 function showReport(report, newRun = false) {
+  stopReplay();
   if (controllerComparison(report) && (newRun || !forteCases.some(([id]) => id === state.selected))) {
     state.selected = forteCases[0][0];
   }
@@ -446,7 +462,27 @@ async function start(mode) {
 $("run").addEventListener("click", () => start("suite"));
 $("run-forte").addEventListener("click", () => start("forte"));
 $("run-station").addEventListener("click", () => start("station_restart"));
-$("step").addEventListener("input", () => renderStation(rowFor(state.selected)));
+$("step").addEventListener("input", () => {
+  stopReplay();
+  renderStation(rowFor(state.selected));
+});
+$("replay").addEventListener("click", () => {
+  if (replayTimer !== undefined) {
+    stopReplay();
+    return;
+  }
+  const row = rowFor(state.selected);
+  if (!row) return;
+  const step = $("step");
+  step.value = step.min;
+  renderStation(row);
+  $("replay").textContent = "Pause replay";
+  replayTimer = setInterval(() => {
+    step.stepUp();
+    renderStation(row);
+    if (step.value === step.max) stopReplay();
+  }, 800);
+});
 $("outage").addEventListener("click", () => start("observer_outage"));
 $("compare").addEventListener("click", () => selectCase(state.selected === "before_action_suppressed" ?
   "before_action_retry" : "after_action_protected_retry", true));
@@ -480,7 +516,9 @@ async function boot() {
 }
 
 if (embeddedEvidence) {
+  document.body.classList.add("recorded");
   $("run-station").hidden = true;
+  $("source-link").hidden = false;
   $("policy-title").closest("section").hidden = true;
   $("history").closest("details").hidden = true;
   showReport(JSON.parse(embeddedEvidence.textContent));

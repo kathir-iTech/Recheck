@@ -16,9 +16,9 @@
   </header>
   <main>
     <section class="intro" aria-labelledby="title">
-      <div><p class="location">Release tests <span aria-hidden="true">/</span> Packaging cell</p><h1>Command recovery</h1>
-      <p class="lede">One command should move one carton. See whether a restart makes the station move it twice.</p></div>
-      <div class="run-actions"><button id="cancel" type="button" class="subtle" hidden>Cancel</button><button id="run-station" class="primary" type="button" disabled><span aria-hidden="true">▶</span> Test station restart</button></div>
+      <div><p class="location">QNX 8.0 · Packaging cell simulation</p><h1>One command. One carton.</h1>
+      <p class="lede">A restart can turn one command into two moves. Recheck measures what the station actually did.</p></div>
+      <div class="run-actions"><button id="cancel" type="button" class="subtle" hidden>Cancel</button><button id="run-station" class="primary" type="button" disabled><span aria-hidden="true">▶</span> Test station restart</button><a id="source-link" class="primary" href="https://github.com/kathir-iTech/Recheck" hidden>View source and setup <span aria-hidden="true">↗</span></a></div>
     </section>
     <p class="notice" id="notice" role="status" hidden></p>
     <section id="comparison" class="comparison panel" aria-labelledby="comparison-title" hidden>
@@ -36,8 +36,8 @@
       <section class="result panel" aria-labelledby="case-title">
         <div class="result-head"><div><p id="source" class="mono source">Captured QNX run</p><h2 id="case-title">Crash after action</h2></div><span id="verdict" class="verdict">Awaiting evidence</span></div>
         <div class="stage">
-          <div class="stage-copy"><span>Packaging station</span><strong id="observed">— <small>/ 1</small></strong><span>Observed advances</span></div>
-          <canvas id="station" width="720" height="250" aria-hidden="true"></canvas>
+          <div class="stage-copy"><span id="station-checkpoint">Final readback</span><strong id="observed" aria-live="polite">— <small>/ 1</small></strong><span>Moves observed / expected</span></div>
+          <div class="station-map"><canvas id="station" width="720" height="250" aria-hidden="true"></canvas><div class="station-scale" aria-hidden="true"><span>Start</span><span>Expected</span><span>Extra move</span></div></div>
           <span class="simulation">Simulated station</span>
         </div>
         <div class="result-foot"><p id="reason"></p><button id="compare" class="subtle" type="button" hidden>Compare with correction <span aria-hidden="true">→</span></button></div>
@@ -46,7 +46,7 @@
     <section class="panel timeline" aria-labelledby="timeline-title">
       <div class="panel-head"><h2 id="timeline-title">What happened</h2><span id="command" class="mono"></span></div>
       <div class="timeline-body" id="timeline"></div>
-      <div id="scrubber" class="scrubber" hidden><label for="step">Inspect station readbacks</label><input id="step" type="range" min="0" max="2" value="2" step="1"><output id="step-label" for="step"></output></div>
+      <div id="scrubber" class="scrubber" hidden><button id="replay" class="subtle" type="button">Replay checkpoints</button><label for="step">Station readbacks</label><input id="step" type="range" min="0" max="2" value="2" step="1"><output id="step-label" for="step"></output></div>
     </section>
     <section class="panel release-policy" aria-labelledby="policy-title">
       <div>

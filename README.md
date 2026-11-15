@@ -6,7 +6,7 @@ A packaging controller requests one carton advance. The station advances, but th
 
 ## Review the result
 
-Open [the recorded workbench](https://kathir-itech.github.io/Recheck/) to compare both policies, step through the checkpoints, and download the run evidence. The recorded view works without a QNX installation. It uses a run collected from the live workbench.
+Open the recorded workbench, select either release outcome, and click **Replay checkpoints**. You can download the evidence for the exact run shown in the demo. Viewing that run requires only a browser. [Recorded workbench](https://kathir-itech.github.io/Recheck/) · [84-second demo and captions](https://github.com/kathir-iTech/Recheck/releases/tag/v0.1.0)
 
 | Same FORTE controller and command | Before first write | After first write | After station restart | After retry | Release |
 | --- | ---: | ---: | ---: | ---: | --- |
@@ -17,7 +17,9 @@ Both trials retain the simulated effect. The second trial also commits the comma
 
 ## Run on your machine
 
-The verified setup uses a Windows host, QEMU x86-64, Python with the pinned dependency in [requirements.txt](requirements.txt), and the Linux-host QNX SDP 8.0 toolchain in WSL. Build with your licensed QNX SDK. The guest images are generated locally.
+The verified setup uses a Windows host with QEMU x86-64, Python 3.14, the pinned PyModbus dependency, and the Linux-host QNX SDP 8.0 toolchain in WSL. The x86-64 target and 8250 serial driver must be installed. Build the guest images locally with your licensed SDK. Cloning and compiling inside the Linux filesystem avoids crossing the WSL filesystem boundary during the build. [Python dependency](requirements.txt)
+
+For the run shown in the demo, build the **FORTE station-restart test** below. The native QNX suite is a separate, smaller test of lost replies and retries.
 
 ### Build the native QNX reference test
 
@@ -36,7 +38,7 @@ python -m venv .venv
 .venv/Scripts/python.exe serve.py --open
 ~~~
 
-If QEMU is outside PATH, set RECOVERY_QEMU to the full path to qemu-system-x86_64.exe. In the browser, use **Run recovery test** under **Reference suite and CI policy**. Inspect the blind retry and its correction. The suite also tests an omitted retry and a lost observer.
+If QEMU is outside `PATH`, set `RECOVERY_QEMU` to the full path to `qemu-system-x86_64.exe`. In the browser, use **Run recovery test** under **Reference suite and CI policy**. Inspect the blind retry and its correction. The suite also tests an omitted retry and an unavailable observer.
 
 ### Build the FORTE station-restart test
 
@@ -55,7 +57,7 @@ cmake --build ../4diac-qnx-build
 bash build-forte-proof.sh ../4diac-forte ../4diac-qnx-build
 ~~~
 
-Copy forte-protected.ifs beside serve.py and click **Test station restart** to run both station policies. Copy forte-blind.ifs as well to run **Run FORTE comparison**, which compares the two retry registers with the station left running. The loopback workbench opens on port 8775.
+Copy `forte-protected.ifs` beside `serve.py` in the Windows checkout. Set up the Python environment using the PowerShell commands above. Open the workbench on port 8775 and click **Test station restart**. Both trials use that one image. Copy `forte-blind.ifs` as well to use **Run FORTE comparison**, which compares the two retry registers with the station left running. Under the test conditions, allow up to 90 seconds per guest trial before the runner reports a timeout.
 
 ## Run the release gate in CI
 
@@ -63,7 +65,7 @@ Copy forte-protected.ifs beside serve.py and click **Test station restart** to r
 .venv/Scripts/python.exe recovery.py --station-restart --output station-release.json
 ~~~
 
-The command uses the same runner as the browser. Exit 0 means the persistent-history policy produced one advance. Exit 1 means the selected policy produced the wrong count. Exit 2 means the check could not establish a verdict. Pass --station-policy volatile to exercise the expected rejection. The volatile control must reproduce the duplicate before a release decision can be verified.
+The command uses the same runner as the browser. Exit `0` means the persistent-history policy produced one advance. Exit `1` means the selected policy produced the wrong count. Exit `2` means the check could not establish a verdict. Pass `--station-policy volatile` to exercise the expected rejection. The in-memory control must reproduce the duplicate before a release decision can be verified.
 
 ## Where QNX runs
 
