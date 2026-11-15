@@ -6,7 +6,7 @@ A packaging controller requests one carton advance. The station advances, but th
 
 ## Review the result
 
-Open the recorded workbench, select either release outcome, and click **Replay checkpoints**. You can download the evidence for the exact run shown in the demo. Viewing that run requires only a browser. [Recorded workbench](https://kathir-itech.github.io/Recheck/) · [84-second demo and captions](https://github.com/kathir-iTech/Recheck/releases/tag/v0.1.0)
+Open the recorded workbench, select either release outcome, and click **Replay checkpoints**. You can download the evidence for the exact run shown in the demo. Viewing that run requires only a browser. [Recorded workbench](https://kathir-itech.github.io/Recheck/) · [Release notes and captions](https://github.com/kathir-iTech/Recheck/releases/tag/v0.1.0)
 
 | Same FORTE controller and command | Before first write | After first write | After station restart | After retry | Release |
 | --- | ---: | ---: | ---: | ---: | --- |
